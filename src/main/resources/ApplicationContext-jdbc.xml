@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/aop
+                        http://www.springframework.org/schema/aop/spring-aop.xsd
+                        http://www.springframework.org/schema/context
+                        http://www.springframework.org/schema/context/spring-context.xsd
+                        http://www.springframework.org/schema/tx
+                        http://www.springframework.org/schema/tx/spring-tx.xsd
+                         "
+>
+    <!--扫描注解-->
+    <context:component-scan base-package="com.bdqn.ssm"></context:component-scan>
+    <!--扫描切面文件-->
+    <aop:aspectj-autoproxy/>
+    <!--读取数据库配置文件-->
+    <context:property-placeholder location="classpath:database.properties"/>
+    <!--JNDI获取数据源-->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" scope="singleton">
+        <property value="${driver}" name="driverClassName"/>
+        <property value="${url}" name="url"/>
+        <property value="${user}" name="username"/>
+        <property value="${password}" name="password"/>
+        <property value="${initialSize}" name="initialSize"/>
+        <property value="${maxActive}" name="maxActive"/>
+        <property value="${maxIdle}" name="maxIdle"/>
+        <property value="${minIdle}" name="minIdle"/>
+        <property value="${maxWait}" name="maxWait"/>
+        <property value="${removeAbandonedTimeout}" name="removeAbandonedTimeout"/>
+        <property value="${removeAbandoned}" name="removeAbandoned"/>
+        <!-- sql 心跳 -->
+        <property value="true" name="testWhileIdle"/>
+        <property value="false" name="testOnBorrow"/>
+        <property value="false" name="testOnReturn"/>
+        <property value="select 1" name="validationQuery"/>
+        <property value="60000" name="timeBetweenEvictionRunsMillis"/>
+        <property value="${maxActive}" name="numTestsPerEvictionRun"/>
+    </bean>
+
+    <!--事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--配置mybatis sqlSessionFactoryBean 工厂-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <property name="mapperLocations">
+            <list>
+                <value>classpath:mapper/**/*.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <!--在目标对象上织入事务增强-->
+    <aop:config proxy-target-class="true">
+    <aop:pointcut id="transService" expression="execution(* *com.bdqn.ssm.service..*(..))"/>
+    <aop:advisor advice-ref="txAdvice" pointcut-ref="transService"/>
+    </aop:config>
+
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="*"  propagation="REQUIRED" rollback-for="Exception"  />
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- AOP 事务处理 结束 -->
+    <!--映射器配置-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    <property value="com.bdqn.ssm.dao" name="basePackage"/>
+    </bean>
+</beans>

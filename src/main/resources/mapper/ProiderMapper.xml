@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bdqn.ssm.dao.ProviderDao">
+    <select id="getProviderList" resultMap="ProviderList">
+        select * from smbms_provider where 1=1
+        <if test="proCode!=null and proCode!=''">
+            and proCode like concat('%',#{proCode},'%')
+        </if>
+        <if test="proName!=null and proName!=''">
+            and proName= #{proName}
+        </if>
+        limit #{pageNo},#{pageSize}
+    </select>
+    <select id="getProviderCount" resultType="int">
+        select count(1) from smbms_provider p where 1=1
+        <choose>
+            <when test="proCode!=null and proCode!=''"> and p.proCode like concat('%',#{proCode},'%')</when>
+            <when test="proName!=null and proName!=''"> and p.proName like concat('%',#{proName},'%')</when>
+
+        </choose>
+    </select>
+
+    <insert id="addProvider" parameterType="Provider">
+        insert into smbms_provider (proCode,proName,
+      proDesc, proContact, proPhone,
+      proAddress, proFax, createdBy,
+      creationDate)
+      value(#{proCode},#{proName},#{proDesc},#{proContact},#{proPhone},#{proAddress},#{proFax}
+    ,#{createdBy},#{creationDate})
+    </insert>
+    <resultMap id="ProviderList" type="Provider">
+        <id property="id" column="id"/>
+        <result property="proCode" column="proCode"/>
+        <result property="proName" column="proName"/>
+        <result property="proDesc" column="proDesc"/>
+        <result property="proContact" column="proContact"/>
+        <result property="proPhone" column="proPhone"/>
+        <result property="proAddress" column="proAddress"/>
+        <result property="proFax" column="proFax"/>
+        <result property="createdBy" column="createdBy"/>
+        <result property="creationDate" column="creationDate"/>
+        <result property="modifyDate" column="modifyDate"/>
+        <result property="modifyBy" column="modifyBy"/>
+    </resultMap>
+</mapper>

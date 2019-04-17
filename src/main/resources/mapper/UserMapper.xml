@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bdqn.ssm.dao.UserDao">
+
+    <select id="doLogin" resultType="User">
+            select * from smbms_user where userCode=#{userCode} and userPassword=#{userPassword}
+    </select>
+
+    <select id="getUserCount" resultType="int">
+        select count(1) from smbms_user u where 1=1
+        <choose>
+            <when test="userName!=null and userName!=''"> and u.userName like concat('%',#{userName},'%')</when>
+            <when test="userRole!=null and userRole!=''"> and u.userRole= #{userRole}</when>
+
+        </choose>
+    </select>
+
+    <select id="getUserList" resultMap="UserList">
+        select u.*,r.roleName from smbms_user u inner join smbms_role r on u.userRole=r.id where 1=1
+        <if test="userName!=null and userName!=''">
+            and u.userName like concat('%',#{userName},'%')
+        </if>
+        <if test="userRole!=null and userRole!=''">
+            and u.userRole= #{userRole}
+        </if>
+        limit #{pageNo},#{pageSize}
+    </select>
+
+    <select id="getRoleList" resultMap="RoleList">
+        select * from smbms_role
+    </select>
+    <resultMap id="RoleList" type="Role">
+        <id property="id" column="id"></id>
+        <result property="roleCode" column="roleCode"></result>
+        <result property="roleName" column="roleName"></result>
+        <result property="createBy" column="createBy"></result>
+        <result property="createDate" column="createDate"></result>
+        <result property="modifyBy" column="modifyBy"></result>
+        <result property="modifyDate" column="modifyDate"></result>
+    </resultMap>
+    <resultMap id="UserList" type="User">
+        <id property="id" column="id"></id>
+        <result property="userName" column="userName"></result>
+        <result property="userCode" column="userCode"></result>
+        <result property="userPassword" column="userPassword"></result>
+        <result property="gender" column="gender"></result>
+        <result property="birthday" column="birthday"></result>
+        <result property="phone" column="phone"></result>
+        <result property="address" column="address"></result>
+        <result property="userRole" column="userRole"></result>
+        <result property="createdBy" column="createdBy"></result>
+        <result property="creationDate" column="creationDate"></result>
+        <result property="modifyBy" column="modifyBy"></result>
+        <result property="modifyDate" column="modifyDate"></result>
+        <result property="userRoleName" column="roleName"></result>
+        <association property="role" javaType="Role">
+            <id property="id" column="id"></id>
+            <result property="roleName" column="roleName"></result>
+        </association>
+    </resultMap>
+
+    <insert id="addUser" parameterType="User">
+        insert into smbms_user (id, userCode, userName,
+      userPassword, gender, birthday,
+      phone, address, userRole,
+      createdBy, creationDate, modifyBy,
+      modifyDate,idPicPath,workPicpath)
+      value(#{id},#{userName},#{userCode},#{userPassword},#{gender},#{birthday},#{phone},#{address}
+    ,#{userRole},#{createdBy},#{creationDate},#{modifyBy},#{modifyDate},#{idPicPath},#{workPicPath})
+  </insert>
+    <update id="updateUser" parameterType="User">
+        update smbms_user
+        <set >
+            <if test="userCode != null" >
+                userCode = #{userCode,jdbcType=VARCHAR},
+            </if>
+            <if test="userName != null" >
+                userName = #{userName,jdbcType=VARCHAR},
+            </if>
+            <if test="userPassword != null" >
+                userPassword = #{userPassword,jdbcType=VARCHAR},
+            </if>
+            <if test="gender != null" >
+                gender = #{gender,jdbcType=INTEGER},
+            </if>
+            <if test="birthday != null" >
+                birthday = #{birthday,jdbcType=DATE},
+            </if>
+            <if test="phone != null" >
+                phone = #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="address != null" >
+                address = #{address,jdbcType=VARCHAR},
+            </if>
+            <if test="userRole != null" >
+                userRole = #{userRole,jdbcType=INTEGER},
+            </if>
+            <if test="createdBy != null" >
+                createdBy = #{createdBy,jdbcType=BIGINT},
+            </if>
+            <if test="creationDate != null" >
+                creationDate = #{creationDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifyBy != null" >
+                modifyBy = #{modifyBy,jdbcType=BIGINT},
+            </if>
+            <if test="modifyDate != null" >
+                modifyDate = #{modifyDate,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="getUserByid" resultMap="UserList">
+        select u.*,r.roleName from smbms_user u inner join smbms_role r on u.userRole=r.id where u.id=#{id}
+    </select>
+
+    <select id="getLoginUser" resultMap="UserList">
+        select u.*,r.roleName from smbms_user u inner join smbms_role r on u.userRole=r.id where u.userCode=#{userCode}
+    </select>
+
+    <delete id="delUser" parameterType="int">
+        delete from smbms_user where id=#{id}
+    </delete>
+</mapper>
